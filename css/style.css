@@ -1,0 +1,329 @@
+/* =========================================================
+   온도 ONDO — 니치 향수 원페이지 시네마
+   폰트: 제목 Nanum Myeongjo 700 · 라틴 Cormorant Garamond 500 · 본문 Noto Sans KR 300
+   이징: cubic-bezier(.7,0,.3,1) 느린 시네마틱 · 질감은 어둠과 빛뿐
+   ========================================================= */
+
+:root{
+  --stage: #0A0A0B;
+  --bone:  #EFEDE8;
+  --haze:  #8A8880;
+  --ember: #B4552D;
+  --ease: cubic-bezier(.7, 0, .3, 1);
+}
+
+*,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
+html{ -webkit-text-size-adjust:100%; }
+html{ scroll-behavior:smooth; }
+@media (prefers-reduced-motion: reduce){ html{ scroll-behavior:auto; } }
+
+body{
+  font-family:"Noto Sans KR", system-ui, sans-serif;
+  font-weight:300;
+  letter-spacing:0.02em;
+  line-height:1.85;
+  color:var(--bone);
+  background:var(--stage);
+  word-break:keep-all;
+  overflow-x:clip;
+  -webkit-font-smoothing:antialiased;
+}
+
+img{ display:block; max-width:100%; }
+a{ color:inherit; }
+
+/* 폰트 유틸 */
+.myung{ font-family:"Nanum Myeongjo", serif; }
+.latin{ font-family:"Cormorant Garamond", serif; font-weight:500; }
+
+h1,h2,h3{ font-family:"Nanum Myeongjo", serif; font-weight:700; line-height:1.4; }
+
+/* 밑줄 텍스트 링크 (기본 버튼 문법) */
+.u-link{
+  display:inline-block; text-decoration:none;
+  border-bottom:1px solid currentColor; padding-bottom:3px;
+  font-size:.92rem; letter-spacing:.06em;
+  transition:color .6s var(--ease), border-color .6s var(--ease), opacity .6s var(--ease);
+}
+.u-link:hover{ color:var(--ember); border-color:var(--ember); }
+.u-link.ember{ color:var(--ember); border-color:var(--ember); }
+.u-link.ember:hover{ opacity:.7; }
+
+:focus-visible{ outline:1px solid var(--ember); outline-offset:4px; }
+
+.skip{ position:absolute; left:-9999px; top:0; z-index:200; background:var(--bone); color:var(--stage); padding:.6rem 1rem; }
+.skip:focus{ left:0; }
+
+/* =========================================================
+   헤더 — 배경 없음, 스테이지/밝은 섹션에 따라 색 자동 전환
+   ========================================================= */
+.site-header{
+  position:fixed; inset:0 0 auto 0; z-index:100;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:1.6rem clamp(1.2rem, 4vw, 3rem);
+  color:var(--bone);
+  transition:color .8s var(--ease);
+}
+.site-header.on-light{ color:var(--stage); }
+.brand{ font-family:"Cormorant Garamond", serif; font-weight:600; font-size:1.5rem; letter-spacing:.14em; text-decoration:none; line-height:1; }
+.nav{ display:flex; gap:1.8rem; }
+.nav a{
+  text-decoration:none; text-transform:lowercase;
+  font-size:11px; letter-spacing:.22em; font-weight:400;
+  opacity:.85; transition:opacity .5s var(--ease);
+}
+.nav a[aria-current="page"]{ opacity:1; border-bottom:1px solid currentColor; padding-bottom:2px; }
+.nav a:hover{ opacity:1; }
+
+/* 햄버거 (풀스크린 오버레이) */
+.hamb{
+  display:none; width:34px; height:26px; background:none; border:0; cursor:pointer;
+  position:relative; color:inherit;
+}
+.hamb span,.hamb span::before,.hamb span::after{
+  content:""; position:absolute; left:0; right:0; height:1px; background:currentColor; transition:transform .4s var(--ease), opacity .4s var(--ease);
+}
+.hamb span{ top:12px; }
+.hamb span::before{ top:-8px; }
+.hamb span::after{ top:8px; }
+
+.nav-overlay{
+  position:fixed; inset:0; z-index:99; background:var(--stage); color:var(--bone);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2rem;
+  opacity:0; visibility:hidden; transition:opacity .6s var(--ease), visibility .6s var(--ease);
+}
+.nav-overlay.open{ opacity:1; visibility:visible; }
+.nav-overlay a{
+  text-decoration:none; font-family:"Nanum Myeongjo", serif; font-size:1.6rem; letter-spacing:.05em;
+  color:var(--bone); opacity:.6; transition:opacity .5s var(--ease);
+}
+.nav-overlay a[aria-current="page"], .nav-overlay a:hover{ opacity:1; }
+.nav-overlay .close{
+  position:absolute; top:1.4rem; right:clamp(1.2rem,4vw,3rem); background:none; border:0; color:var(--bone);
+  font-family:"Cormorant Garamond",serif; font-size:2rem; cursor:pointer; line-height:1;
+}
+
+/* =========================================================
+   시네마 (플래그십) — 고정 스테이지 씬 전환
+   ========================================================= */
+.cinema{ position:relative; height:520vh; }
+.cinema-stage{
+  position:sticky; top:0; height:100dvh; overflow:hidden; background:var(--stage);
+  display:block;
+}
+.ly{
+  position:absolute; left:50%; top:50%;
+  transform:translate(-50%,-50%);
+  will-change:transform, opacity;
+}
+.ly-bottle{ width:min(40vh, 66vw); aspect-ratio:2/3; }
+.ly-ing{ width:min(24vh, 40vw); aspect-ratio:1/1; }
+.ly-media{ position:relative; width:100%; height:100%; }
+.ly-media img{
+  position:absolute; inset:0; width:100%; height:100%; object-fit:contain;
+  mix-blend-mode:screen;   /* 순흑 배경 원료/병 → 스테이지 합성 */
+}
+@supports not (mix-blend-mode: screen){
+  .ly-media img{ mix-blend-mode:normal; }
+}
+
+/* 씬 텍스트 */
+.ly-text{ text-align:center; width:min(90vw, 40rem); pointer-events:none; }
+.ly-text .u-link, .ly-text a{ pointer-events:auto; }
+.wordmark{
+  font-family:"Cormorant Garamond", serif; font-weight:500;
+  font-size:clamp(2.4rem, 1.5rem + 5vw, 5.5rem); letter-spacing:.6em;
+  color:var(--bone); white-space:nowrap; text-indent:.6em; /* 자간 보정 */
+}
+.scene-copy{
+  font-family:"Nanum Myeongjo", serif; font-weight:700;
+  font-size:clamp(1.5rem, 1rem + 3vw, 2.6rem); letter-spacing:.02em; color:var(--bone);
+}
+.ing-cap{
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  font-family:"Nanum Myeongjo", serif; font-size:.9rem; letter-spacing:.1em; color:var(--haze);
+  text-align:center; white-space:nowrap; pointer-events:none;
+}
+.scene4-meta{ margin-bottom:1.4rem; font-size:.95rem; letter-spacing:.14em; color:var(--haze); }
+.scene4-title{ font-family:"Cormorant Garamond",serif; font-size:clamp(2rem,1.4rem+2.5vw,3rem); letter-spacing:.08em; margin-bottom:.4rem; }
+.scene4-links{ display:flex; gap:2rem; justify-content:center; margin-top:1.8rem; }
+.ember-line{
+  position:absolute; left:50%; top:50%; height:1px; background:var(--ember);
+  transform:translate(-50%,-50%) scaleX(0); transform-origin:center;
+}
+
+.scroll-hint{
+  position:absolute; left:50%; bottom:3vh; transform:translateX(-50%);
+  font-family:"Cormorant Garamond",serif; font-size:.8rem; letter-spacing:.3em; color:var(--haze);
+  text-transform:uppercase; transition:opacity .6s var(--ease);
+}
+
+/* =========================================================
+   온도계 바 — 밝은(bone) 섹션
+   ========================================================= */
+.section{ padding:clamp(5rem, 12vh, 11rem) clamp(1.2rem,5vw,3rem); }
+.light{ background:var(--bone); color:var(--stage); }
+.dark{ background:var(--stage); color:var(--bone); }
+
+.thermo{ max-width:60rem; margin-inline:auto; text-align:center; }
+.thermo__scale{ position:relative; height:60px; margin:3rem 0 2.5rem; }
+.thermo__base{ position:absolute; left:0; right:0; top:30px; height:1px; background:rgba(10,10,11,.25); }
+.thermo__fill{ position:absolute; left:0; top:30px; height:1px; width:0; background:var(--ember); transition:width 1.8s var(--ease); }
+.thermo__tick{ position:absolute; top:0; transform:translateX(-50%); font-family:"Nanum Myeongjo",serif; font-size:.85rem; color:var(--haze); }
+.thermo__tick b{ display:block; width:1px; height:14px; background:currentColor; margin:20px auto 0; }
+.thermo__tick.is-mark{ color:var(--ember); font-weight:700; }
+.thermo__phil{ font-family:"Nanum Myeongjo",serif; font-size:clamp(1.2rem,.9rem+1.4vw,1.7rem); line-height:1.9; letter-spacing:.01em; }
+.thermo__phil span{ display:block; }
+
+/* =========================================================
+   3면 프리뷰 (dark) — 여백 크게, hover 밝아짐
+   ========================================================= */
+.trio{ max-width:76rem; margin-inline:auto; }
+.trio__grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(1.5rem,5vw,4.5rem); align-items:center; }
+.trio__cut{ display:block; text-decoration:none; text-align:center; }
+.trio__media{ position:relative; background:#141416; overflow:hidden; }
+.trio__media img{ position:absolute; inset:0; width:100%; height:100%; object-fit:contain; mix-blend-mode:screen; filter:brightness(.7); transition:filter .8s var(--ease); }
+.trio__cut:hover .trio__media img, .trio__cut:focus-visible .trio__media img{ filter:brightness(1); }
+.trio__cut.r23 .trio__media{ aspect-ratio:2/3; }
+.trio__cut.r11 .trio__media{ aspect-ratio:1/1; }
+.trio__cap{ margin-top:1.2rem; font-family:"Cormorant Garamond",serif; letter-spacing:.18em; font-size:.9rem; color:var(--haze); text-transform:uppercase; }
+.trio__lead{ text-align:center; font-family:"Nanum Myeongjo",serif; font-size:1.2rem; margin-bottom:3.5rem; }
+
+/* =========================================================
+   엔딩 (dark)
+   ========================================================= */
+.ending{ min-height:80vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2.4rem; text-align:center; }
+.ending__line{ font-family:"Nanum Myeongjo",serif; font-size:clamp(1.6rem,1.1rem+2.5vw,2.8rem); letter-spacing:.03em; }
+
+/* 푸터 */
+.site-footer{ background:var(--stage); color:var(--haze); padding:3rem clamp(1.2rem,5vw,3rem); border-top:1px solid rgba(239,237,232,.1); }
+.site-footer .fwrap{ max-width:76rem; margin-inline:auto; display:flex; flex-wrap:wrap; gap:1.2rem 2.5rem; align-items:center; justify-content:space-between; }
+.site-footer .brand{ color:var(--bone); }
+.site-footer nav{ display:flex; flex-wrap:wrap; gap:1.4rem; }
+.site-footer nav a{ text-decoration:none; font-size:11px; letter-spacing:.2em; text-transform:lowercase; }
+.site-footer nav a:hover{ color:var(--bone); }
+.site-footer .fnote{ width:100%; font-size:.72rem; letter-spacing:.08em; margin-top:.6rem; }
+
+/* =========================================================
+   서브페이지 공통
+   ========================================================= */
+main{ min-height:60vh; }
+.page-intro{ padding:clamp(7rem,16vh,11rem) clamp(1.2rem,5vw,3rem) clamp(2rem,6vh,4rem); text-align:center; max-width:52rem; margin-inline:auto; }
+.page-intro .eyebrow{ font-family:"Cormorant Garamond",serif; letter-spacing:.4em; text-transform:uppercase; font-size:.8rem; color:var(--haze); }
+.page-intro h1{ font-size:clamp(2rem,1.4rem+3vw,3.4rem); margin-top:1.2rem; letter-spacing:.02em; }
+.page-intro p{ margin-top:1.4rem; color:inherit; opacity:.8; }
+
+/* notes.html */
+.note-tier{ max-width:64rem; margin:0 auto clamp(4rem,10vh,7rem); display:grid; grid-template-columns:1fr 1fr; gap:clamp(2rem,5vw,4rem); align-items:center; }
+.note-tier:nth-child(even){ direction:rtl; }
+.note-tier:nth-child(even) > *{ direction:ltr; }
+.note-tier__media{ position:relative; aspect-ratio:1/1; background:#141416; overflow:hidden; }
+.note-tier__media img{ position:absolute; inset:0; width:100%; height:100%; object-fit:contain; mix-blend-mode:screen; }
+/* 원료 2종을 나란히 (미들: 무화과+레인 / 베이스: 샌달우드+머스크) */
+.note-tier__media.pair{ position:static; aspect-ratio:auto; background:transparent; overflow:visible; display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.note-tier__media.pair .nt-cut{ position:relative; aspect-ratio:1/1; background:#141416; overflow:hidden; }
+.note-tier__media.pair .nt-cut img{ position:absolute; inset:0; width:100%; height:100%; object-fit:contain; mix-blend-mode:screen; }
+.note-tier__k{ font-family:"Cormorant Garamond",serif; letter-spacing:.3em; text-transform:uppercase; font-size:.8rem; color:var(--ember); }
+.note-tier__name{ font-family:"Nanum Myeongjo",serif; font-size:clamp(1.6rem,1.2rem+2vw,2.4rem); margin:.6rem 0 1rem; }
+.note-tier__desc{ opacity:.82; }
+.note-tier__dur{ margin-top:1.2rem; font-family:"Cormorant Garamond",serif; letter-spacing:.1em; color:var(--haze); font-size:.95rem; }
+
+.pyramid-wrap{ max-width:40rem; margin:0 auto clamp(4rem,9vh,6rem); text-align:center; }
+.pyramid-wrap h2{ font-size:1.4rem; margin-bottom:2rem; letter-spacing:.03em; }
+.pyramid-svg{ width:100%; height:auto; overflow:visible; }
+.pyramid-svg line{ stroke:var(--haze); stroke-width:1; }
+.pyramid-svg text{ fill:var(--bone); font-family:"Nanum Myeongjo",serif; font-size:15px; }
+.pyramid-svg .p-sub{ fill:var(--haze); font-size:11px; letter-spacing:.05em; }
+
+.timeline-scent{ max-width:64rem; margin:0 auto; }
+.timeline-scent h2{ text-align:center; font-size:1.4rem; margin-bottom:2.5rem; letter-spacing:.03em; }
+.ts-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; }
+.ts-step{ text-align:center; padding-top:1.5rem; border-top:1px solid rgba(239,237,232,.18); position:relative; }
+.ts-step::before{ content:""; position:absolute; top:-3px; left:0; width:5px; height:5px; border-radius:50%; background:var(--ember); }
+.ts-step .t{ font-family:"Cormorant Garamond",serif; letter-spacing:.1em; color:var(--ember); font-size:1.1rem; }
+.ts-step .n{ font-family:"Nanum Myeongjo",serif; margin:.3rem 0; }
+.ts-step .d{ font-size:.85rem; color:var(--haze); }
+
+/* story.html (light) */
+.qa{ max-width:48rem; margin:0 auto; }
+.qa__item{ padding:clamp(2.5rem,7vh,4.5rem) 0; border-bottom:1px solid rgba(10,10,11,.12); }
+.qa__item:last-child{ border-bottom:0; }
+.qa__q{ font-family:"Cormorant Garamond",serif; color:var(--ember); font-size:1.05rem; letter-spacing:.05em; margin-bottom:1.2rem; }
+.qa__a{ font-family:"Nanum Myeongjo",serif; font-size:clamp(1.15rem,.95rem+1vw,1.5rem); line-height:1.95; }
+.mood{ display:grid; grid-template-columns:1fr 1fr; gap:clamp(3rem,10vw,9rem); max-width:70rem; margin:clamp(4rem,10vh,8rem) auto 0; align-items:center; }
+.mood .ph{ position:relative; aspect-ratio:4/5; background:#dedcd6; overflow:hidden; }
+.mood .ph img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.signature{ text-align:center; margin-top:clamp(4rem,10vh,7rem); font-family:"Cormorant Garamond",serif; letter-spacing:.15em; color:var(--haze); }
+
+/* collection.html (dark) — 세로 풀폭 한 종씩 */
+.col-item{
+  max-width:72rem; margin:0 auto; padding:clamp(3rem,9vh,7rem) 0;
+  display:grid; grid-template-columns:1fr 1fr; gap:clamp(2rem,6vw,5rem); align-items:center;
+  border-bottom:1px solid rgba(239,237,232,.12);
+}
+.col-item:nth-child(even){ direction:rtl; }
+.col-item:nth-child(even) > *{ direction:ltr; }
+.col-item__media{ position:relative; aspect-ratio:2/3; background:#141416; overflow:hidden; }
+.col-item__media img{ position:absolute; inset:0; width:100%; height:100%; object-fit:contain; mix-blend-mode:screen; }
+.col-item__latin{ font-family:"Cormorant Garamond",serif; letter-spacing:.2em; color:var(--ember); text-transform:uppercase; font-size:.85rem; }
+.col-item__name{ font-family:"Nanum Myeongjo",serif; font-size:clamp(1.8rem,1.3rem+2.4vw,2.8rem); margin:.6rem 0 1rem; }
+.col-item__notes{ opacity:.82; }
+.col-item__price{ margin-top:1.4rem; font-family:"Nanum Myeongjo",serif; font-size:1.3rem; }
+.col-item__price small{ font-size:.8rem; color:var(--haze); font-family:"Cormorant Garamond",serif; letter-spacing:.1em; }
+.col-item__cta{ margin-top:1.6rem; }
+
+/* purchase.html (light) */
+.buy{ max-width:52rem; margin:0 auto; }
+.buy__channels{ display:grid; grid-template-columns:1fr 1fr; gap:clamp(1.5rem,4vw,3rem); margin-bottom:clamp(3.5rem,9vh,6rem); }
+.buy__chan{ text-align:center; padding:clamp(2rem,5vh,3rem) 1.5rem; border:1px solid rgba(10,10,11,.15); text-decoration:none; transition:border-color .6s var(--ease); }
+.buy__chan:hover{ border-color:var(--ember); }
+.buy__chan .cn{ font-family:"Nanum Myeongjo",serif; font-size:1.25rem; margin-bottom:.6rem; }
+.buy__chan .cd{ font-size:.85rem; color:var(--haze); letter-spacing:.03em; }
+.buy__table{ width:100%; border-collapse:collapse; margin-bottom:clamp(3rem,8vh,5rem); font-family:"Nanum Myeongjo",serif; }
+.buy__table th, .buy__table td{ text-align:left; padding:1rem .3rem; border-bottom:1px solid rgba(10,10,11,.12); }
+.buy__table th{ font-weight:400; color:var(--haze); font-size:.85rem; letter-spacing:.05em; }
+.buy__table td.price{ text-align:right; font-size:1.15rem; }
+details.buy__fold{ border-bottom:1px solid rgba(10,10,11,.12); }
+details.buy__fold summary{ cursor:pointer; padding:1.3rem .2rem; font-family:"Nanum Myeongjo",serif; list-style:none; display:flex; justify-content:space-between; align-items:center; }
+details.buy__fold summary::-webkit-details-marker{ display:none; }
+details.buy__fold summary::after{ content:"+"; font-family:"Cormorant Garamond",serif; color:var(--ember); font-size:1.3rem; }
+details.buy__fold[open] summary::after{ content:"–"; }
+details.buy__fold .fold-body{ padding:0 .2rem 1.4rem; color:var(--stage); opacity:.8; font-size:.95rem; }
+
+/* =========================================================
+   반응형
+   ========================================================= */
+@media (max-width:768px){
+  .nav{ display:none; }
+  .hamb{ display:block; }
+  .cinema{ height:380vh; }
+  .ly-ing.ing-3{ display:none; }        /* 모바일: 원료 레이어 2개만 */
+  .trio__grid{ grid-template-columns:1fr; gap:3rem; max-width:22rem; margin-inline:auto; }
+  .note-tier{ grid-template-columns:1fr; gap:1.5rem; }
+  .note-tier:nth-child(even){ direction:ltr; }
+  .col-item{ grid-template-columns:1fr; gap:1.8rem; }
+  .col-item:nth-child(even){ direction:ltr; }
+  .ts-row{ grid-template-columns:1fr 1fr; gap:1.5rem; }
+  .mood{ grid-template-columns:1fr; gap:2rem; max-width:24rem; }
+  .buy__channels{ grid-template-columns:1fr; }
+  .scene4-links{ flex-direction:column; gap:1.2rem; align-items:center; }
+}
+
+/* =========================================================
+   prefers-reduced-motion — 시네마 해체(정적 세로 섹션)
+   ========================================================= */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{ transition:none !important; animation:none !important; }
+}
+/* JS가 부여하는 정적 모드 (reduced-motion 또는 폴백) */
+.cinema.is-static{ height:auto; }
+.cinema.is-static .cinema-stage{ position:static; height:auto; overflow:visible; padding:6rem 1.2rem; }
+.cinema.is-static .ly{
+  position:relative; left:auto; top:auto; transform:none !important;
+  opacity:1 !important; margin:0 auto clamp(3rem,8vh,5rem); display:flex; justify-content:center;
+}
+.cinema.is-static .ly-text{ width:min(90vw,40rem); }
+.cinema.is-static .wordmark{ letter-spacing:.15em !important; }
+.cinema.is-static .ing-cap{ position:static; transform:none; margin-top:.8rem; }
+.cinema.is-static .ember-line{ position:relative; transform:none !important; width:140px !important; margin:1rem auto; }
+.cinema.is-static .scroll-hint{ display:none; }
